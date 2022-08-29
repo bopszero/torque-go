@@ -1,0 +1,30 @@
+version: '3'
+services:
+  torque-tree:
+    container_name: snap-torque-tree
+    build:
+      context: .
+      dockerfile: deployment/docker/tree.Dockerfile
+    ports: 
+      - 10900:8080
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+      - CONFIG_FILE=/opt/config/config.tree.yaml
+    volumes:
+      - ./:/opt/config/:Z
+      - /var/log/torque/tree/:/var/log/app/:Z
+    restart: on-failure
+  torque-txn:
+    container_name: snap-torque-txn
+    build:
+      context: .
+      dockerfile: deployment/docker/txn.Dockerfile
+    ports: 
+      - 10901:8080
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+      - CONFIG_FILE=/opt/config/config.txn.yaml
+    volumes:
+      - ./:/opt/config/:Z
+      - /var/log/torque/tree/:/var/log/app/:Z
+    restart: on-failure

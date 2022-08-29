@@ -1,0 +1,1307 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Torque Wallet Service
+servers:
+  - url: "/"
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Paging:
+      type: object
+      properties:
+        limit:
+          type: integer
+          example: 10
+        offset:
+          type: integer
+          example: 0
+        before_id:
+          type: integer
+        after_id:
+          type: integer
+      required:
+        - limit
+    Decimal:
+      type: string
+      description: Decimal number in string
+      example: "14211.364041"
+    ResponseMessage:
+      type: string
+      example: "Field validation for 'user_id' failed on the 'required' tag."
+    ID:
+      type: integer
+      minimum: 1
+      example: 8466032601
+    Reference:
+      type: string
+      example: "9127400572"
+    Currency:
+      type: string
+      enum:
+        - BTC
+        - BCH
+        - LTC
+        - ETH
+        - TRX
+        - USDT
+        - TORQ
+    Network:
+      type: string
+      enum:
+        - BTC:TESTNET
+        - BTC
+        - BCH:TESTNET
+        - BCH
+        - LTC:TESTNET
+        - LTC
+        - ETH:TEST_ROPSTEN
+        - ETH
+        - TRX:TEST_SHASTA
+        - TRX
+        - TORQ
+    Address:
+      type: string
+      minLength: 16
+      maxLength: 255
+      example: bc1q74m8sy7dpqwuegcrddfwqp3gzwau62k7rys0my
+    Timestamp:
+      type: integer
+      example: 1578396200
+    AuthCode:
+      type: string
+      minLength: 6
+      maxLength: 6
+      example: "111111"
+    Note:
+      type: string
+      example: I lay my love on you...
+    DirectionType:
+      type: integer
+      enum:
+        - -1
+        - +1
+      description: |
+        * -1 - Outcome
+        * +1 - Income
+    ChannelType:
+      type: integer
+      enum:
+        - 10000
+        - 10001
+        - 10002
+        - 10003
+        - 10004
+        - 10100
+        - 10101
+        - 100000
+        - 100001
+        - 100002
+        - 100003
+        - 100004
+        - 100100
+        - 100101
+        - 110000
+        - 110001
+        - 110002
+      description: |
+        * 10000 - Source Balance
+        * 10001 - Source System
+        * 10002 - Source Transfer
+        * 10003 - Source Blockchain Network
+        * 10004 - Source Torque Purchase
+        * 10100 - Source Promo Code
+        * 10101 - Source Trading Reward
+        *
+        * 100000 - Destination Balance
+        * 100001 - Destination System
+        * 100002 - Destination Transfer
+        * 100003 - Destination Blockchain Network
+        * 100004 - Destination Torque Purchase
+        * 100100 - Destination Profit Reinvest
+        * 100101 - Destination Profit Withdraw
+        * 110000 - Destination Merchant Gorilla Hotel
+        * 110001 - Destination Merchant Gorilla Flight
+        * 110002 - Destination Merchant Torque Mall
+    OrderStatus:
+      type: integer
+      enum:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 50
+        - 98
+        - 99
+        - 100
+        - 101
+        - -1
+        - -2
+        - -3
+      description: |
+        * -1 - Failed
+        * -2 - Canceled
+        * -3 - Expired
+        *
+        * 1 - New
+        * 2 - Init
+        * 3 - Handle Source
+        * 4 - Handle Destination
+        *
+        * 50 - Need Staff
+        *
+        * 97 - Failing
+        * 98 - Refunding
+        * 99 - Completing
+        * 100 - Completed
+        * 101 - Refunded
+      example: 100
+    Order:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/ID"
+        uid:
+          $ref: "#/components/schemas/ID"
+        direction_type:
+          $ref: "#/components/schemas/DirectionType"
+        currency:
+          $ref: "#/components/schemas/Currency"
+        status:
+          $ref: "#/components/schemas/OrderStatus"
+        src_channel_type:
+          $ref: "#/components/schemas/ChannelType"
+        src_channel_id:
+          type: integer
+          description: Related object ID of Source channel
+        src_channel_ref:
+          $ref: "#/components/schemas/Reference"
+        src_channel_amount:
+          $ref: "#/components/schemas/Decimal"
+        src_channel_context:
+          $ref: "#/components/schemas/OrderChannelContext"
+        dst_channel_type:
+          $ref: "#/components/schemas/ChannelType"
+        dst_channel_id:
+          type: integer
+          description: Related object ID of Desctination channel
+        dst_channel_ref:
+          $ref: "#/components/schemas/Reference"
+        dst_channel_amount:
+          $ref: "#/components/schemas/Decimal"
+        dst_channel_context:
+          $ref: "#/components/schemas/OrderChannelContext"
+        amount_sub_total:
+          $ref: "#/components/schemas/Decimal"
+        amount_fee:
+          $ref: "#/components/schemas/Decimal"
+        amount_discount:
+          $ref: "#/components/schemas/Decimal"
+        amount_total:
+          $ref: "#/components/schemas/Decimal"
+        note:
+          $ref: "#/components/schemas/Note"
+        create_time:
+          $ref: "#/components/schemas/Timestamp"
+        update_time:
+          $ref: "#/components/schemas/Timestamp"
+      required:
+        - id
+        - uid
+        - direction_type
+        - currency
+        - status
+        - src_channel_type
+        - src_channel_id
+        - src_channel_ref
+        - src_channel_amount
+        - dst_channel_type
+        - dst_channel_id
+        - dst_channel_ref
+        - dst_channel_amount
+        - amount_sub_total
+        - amount_fee
+        - amount_discount
+        - amount_total
+        - note
+        - create_time
+        - update_time
+    OrderChannelContext:
+      type: object
+      properties:
+        meta:
+          type: object
+          nullable: true
+        details:
+          type: object
+          nullable: true
+    LockAction:
+      type: integer
+      enum:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+      description: |
+        * 1 - Personal-Send
+        * 2 - Personal-TORQ-Transfer
+        * 3 - Personal-TORQ-Reallocate
+        * 4 - Personal-TORQ-Purchase
+        * 5 - Trading-Send(Withdraw)
+    CurrencyInfo:
+      type: object
+      properties:
+        currency:
+          $ref: "#/components/schemas/Currency"
+        price_usd:
+          $ref: "#/components/schemas/Decimal"
+        price_usdt:
+          $ref: "#/components/schemas/Decimal"
+        priority:
+          type: integer
+          example: 11
+        is_fiat:
+          type: boolean
+        decimal_places:
+          type: integer
+          example: 8
+        icon_url:
+          type: string
+          example: https://torquebot.net/assests/coins/btc.png
+        banner_url:
+          type: string
+          example: https://qc.torquebot.net/assests/coins/banner_btc.jpg
+        symbol:
+          type: string
+          example: "₿"
+        color_hex:
+          type: string
+          example: f8932b
+        status_message:
+          type: string
+          example: "Will be available on 2021-01-01"
+security:
+  - BearerAuth: [ ]
+tags:
+  - name: Portfolio
+  - name: Payment
+paths:
+  /v1/meta/handshake/:
+    post:
+      summary: Init meta data
+      tags:
+        - Meta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firebase_token:
+                  type: string
+                  example: fpnf2XHOS6O82VWajh8fCL:APA91bHc3SpnCwvPxHo0UlMdgEBVgzcJ_QWs80Y5-IPCynyt2FZR27wzr6Q86ZoY35kyUoYqZZlZRUFGjjhDlCIS6cMPwz7fXpy_hrzSX8ktkcgcsToMTtNfEcxz1V__wg5rr7xIIovu
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      features:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                              example: kyc
+                            name:
+                              type: string
+                              example: KYC
+                            is_available:
+                              type: boolean
+                      blockchain_networks:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            code:
+                              $ref: "#/components/schemas/Network"
+                            currency:
+                              $ref: "#/components/schemas/Currency"
+                            name:
+                              type: string
+                              example: Ethereum
+                            token_transfer_code_name:
+                              type: string
+                              example: ERC20
+                      network_currencies:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            currency:
+                              $ref: "#/components/schemas/Currency"
+                            network:
+                              $ref: "#/components/schemas/Network"
+                            priority:
+                              type: integer
+                              example: 2
+                            withdrawal_fee:
+                              $ref: "#/components/schemas/Decimal"
+  /v1/meta/currency-info/:
+    post:
+      summary: Get system currency info
+      tags:
+        - Meta
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      currencies:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CurrencyInfo"
+  /v1/portfolio/overview/get/:
+    post:
+      summary: Get Portfolio Overview
+      tags:
+        - Portfolio
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      balances:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            uid:
+                              $ref: "#/components/schemas/ID"
+                            is_available:
+                              type: boolean
+                            currency:
+                              $ref: "#/components/schemas/Currency"
+                            currency_price_usd:
+                              $ref: "#/components/schemas/Decimal"
+                            currency_price_usdt:
+                              $ref: "#/components/schemas/Decimal"
+                            amount:
+                              $ref: "#/components/schemas/Decimal"
+                            update_time:
+                              $ref: "#/components/schemas/Timestamp"
+  /v1/portfolio/currency/get/:
+    post:
+      summary: Get User Currency Info
+      tags:
+        - Portfolio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currency:
+                  $ref: "#/components/schemas/Currency"
+              required:
+                - currency
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      currency:
+                        $ref: "#/components/schemas/Currency"
+                      price_usd:
+                        $ref: "#/components/schemas/Decimal"
+                      price_usdt:
+                        $ref: "#/components/schemas/Decimal"
+                      account_no:
+                        $ref: "#/components/schemas/Address"
+                      balance:
+                        $ref: "#/components/schemas/Decimal"
+                      notice:
+                        type: string
+                        example: "We cannot call APIs due to lacking of the sunlight in the midnight."
+  /v1/portfolio/currency/order/list/:
+    post:
+      summary: List Orders of a Currency
+      tags:
+        - Portfolio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                paging:
+                  $ref: "#/components/schemas/Paging"
+                currency:
+                  $ref: "#/components/schemas/Currency"
+              required:
+                - currency
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      paging:
+                        $ref: "#/components/schemas/Paging"
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Order"
+  /v1/portfolio/currency/order/export/:
+    post:
+      summary: Get Token for exporting Orders of a Currency
+      tags:
+        - Portfolio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                from_time:
+                  $ref: "#/components/schemas/Timestamp"
+                to_time:
+                  $ref: "#/components/schemas/Timestamp"
+              required:
+                - currency
+                - from_time
+                - to_time
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        example: b5bac6a21c124fbaa56b7688720cf407
+  /v1/portfolio/currency/order/export/{token}/:
+    get:
+      summary: Export Orders of a Currency
+      tags:
+        - Portfolio
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+            example: b5bac6a21c124fbaa56b7688720cf407
+      responses:
+        "200":
+          description: Exported file data
+          content:
+            text/csv:
+              example: "Code,Currency,Type,Status,Amount,Time,Note"
+        "500":
+          description: Server error
+  /v1/portfolio/currency/order/get/:
+    post:
+      summary: Get an Order
+      tags:
+        - Portfolio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                ref:
+                  $ref: "#/components/schemas/Reference"
+              required:
+                - currency
+                - ref
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    $ref: "#/components/schemas/Order"
+  /v1/payment/order/checkout/:
+    post:
+      summary: Checkout a new Order
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                src_channel_type:
+                  $ref: "#/components/schemas/ChannelType"
+                src_channel_id:
+                  type: integer
+                src_channel_ref:
+                  $ref: "#/components/schemas/Reference"
+                src_channel_amount:
+                  $ref: "#/components/schemas/Decimal"
+                src_channel_context:
+                  type: object
+                dst_channel_type:
+                  $ref: "#/components/schemas/ChannelType"
+                dst_channel_id:
+                  type: integer
+                dst_channel_ref:
+                  $ref: "#/components/schemas/Reference"
+                dst_channel_amount:
+                  $ref: "#/components/schemas/Decimal"
+                dst_channel_context:
+                  type: object
+              required:
+                - currency
+                - src_channel_type
+                - src_channel_amount
+                - dst_channel_type
+                - dst_channel_amount
+            examples:
+              transfer_p2p:
+                value:
+                  {
+                    "currency": "TORQ",
+                    "src_channel_type": 10000,
+                    "src_channel_amount": "12.34567898",
+                    "dst_channel_type": 100002,
+                    "dst_channel_amount": "12.34567898",
+                    "dst_channel_context":
+                      {
+                        "user_identity": "powerman",
+                        "note": "Hello World!",
+                      },
+                  }
+              profit_reinvest:
+                value:
+                  {
+                    "currency": "TORQ",
+                    "src_channel_type": 10000,
+                    "src_channel_amount": "20",
+                    "dst_channel_type": 100100,
+                    "dst_channel_amount": "20",
+                    "dst_channel_context":
+                      {
+                        "user_identity": "powerman",
+                        "currency": "USDT",
+                        "exchange_rate": "0.05",
+                      },
+                  }
+              profit_withdraw:
+                value:
+                  {
+                    "currency": "TORQ",
+                    "src_channel_type": 10000,
+                    "src_channel_amount": "25",
+                    "dst_channel_type": 100101,
+                    "dst_channel_amount": "25",
+                    "dst_channel_context":
+                      {
+                        "address": "0x83a7663b2b9d6d3f377a41d03b03ba0021e2f831",
+                        "currency": "USDT",
+                        "exchange_rate": "0.05",
+                      },
+                  }
+              blockchain_txn:
+                value:
+                  {
+                    "currency": "USDT",
+                    "src_channel_type": 10003,
+                    "src_channel_amount": "1",
+                    "dst_channel_type": 100003,
+                    "dst_channel_amount": "1",
+                    "dst_channel_context":
+                      {
+                        "to_address": "0xf12Db5BeC81DD6f41366EbcC599508212b751479",
+                      },
+                  }
+              torque_purchase:
+                value:
+                  {
+                    "currency": "USDT",
+                    "src_channel_type": 10003,
+                    "src_channel_amount": "2",
+                    "dst_channel_type": 100004,
+                    "dst_channel_amount": "2",
+                  }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      channel_src_info:
+                        type: object
+                        nullable: true
+                      channel_dst_info:
+                        type: object
+                        nullable: true
+                        example:
+                          { "fee": { "currency": "TORQ", "value": "0.001" } }
+  /v1/payment/order/init/:
+    post:
+      summary: Init a new Order
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                src_channel_type:
+                  $ref: "#/components/schemas/ChannelType"
+                src_channel_id:
+                  type: integer
+                src_channel_ref:
+                  $ref: "#/components/schemas/Reference"
+                src_channel_amount:
+                  $ref: "#/components/schemas/Decimal"
+                src_channel_context:
+                  type: object
+                dst_channel_type:
+                  $ref: "#/components/schemas/ChannelType"
+                dst_channel_id:
+                  type: integer
+                dst_channel_ref:
+                  $ref: "#/components/schemas/Reference"
+                dst_channel_amount:
+                  $ref: "#/components/schemas/Decimal"
+                dst_channel_context:
+                  type: object
+                amount_sub_total:
+                  $ref: "#/components/schemas/Decimal"
+                amount_total:
+                  $ref: "#/components/schemas/Decimal"
+                note:
+                  $ref: "#/components/schemas/Note"
+              required:
+                - currency
+                - src_channel_type
+                - src_channel_amount
+                - dst_channel_type
+                - dst_channel_amount
+                - amount_sub_total
+                - amount_total
+            examples:
+              transfer_p2p:
+                value:
+                  {
+                    "currency": "TORQ",
+                    "src_channel_type": 10000,
+                    "src_channel_amount": "12.34567898",
+                    "dst_channel_type": 100002,
+                    "dst_channel_amount": "12.34567898",
+                    "dst_channel_context":
+                      {
+                        "note": "Hello World!",
+                        "user_identity": "powerman",
+                      },
+                    "amount_sub_total": "12.34567898",
+                    "amount_total": "12.34567898",
+                    "note": "Test transfer",
+                  }
+              profit_reinvest:
+                value:
+                  {
+                    "currency": "TORQ",
+                    "src_channel_type": 10000,
+                    "src_channel_amount": "20",
+                    "dst_channel_type": 100100,
+                    "dst_channel_amount": "20",
+                    "dst_channel_context":
+                      {
+                        "user_identity": "powerman",
+                        "currency": "USDT",
+                        "exchange_rate": "0.05",
+                      },
+                    "amount_sub_total": "20",
+                    "amount_total": "20",
+                    "note": "Test reinvest USDT",
+                  }
+              profit_withdraw:
+                value:
+                  {
+                    "currency": "TORQ",
+                    "src_channel_type": 10000,
+                    "src_channel_amount": "25",
+                    "dst_channel_type": 100101,
+                    "dst_channel_amount": "25",
+                    "dst_channel_context":
+                      {
+                        "address": "0x83a7663b2b9d6d3f377a41d03b03ba0021e2f831",
+                        "currency": "USDT",
+                        "exchange_rate": "0.05",
+                      },
+                    "amount_sub_total": "25",
+                    "amount_total": "25",
+                    "note": "Test profit withdraw to USDT",
+                  }
+              blockchain_txn:
+                value:
+                  {
+                    "currency": "USDT",
+                    "src_channel_type": 10003,
+                    "src_channel_amount": "1",
+                    "dst_channel_type": 100003,
+                    "dst_channel_amount": "1",
+                    "dst_channel_context":
+                      {
+                        "to_address": "0xf12Db5BeC81DD6f41366EbcC599508212b751479",
+                      },
+                    "amount_sub_total": "1",
+                    "amount_total": "1",
+                    "note": "Test submit USDT txn",
+                  }
+              torque_purchase:
+                value:
+                  {
+                    "currency": "USDT",
+                    "src_channel_type": 10003,
+                    "src_channel_amount": "2",
+                    "dst_channel_type": 100004,
+                    "dst_channel_amount": "2",
+                  }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      order_id:
+                        $ref: "#/components/schemas/ID"
+  /v1/payment/order/execute/:
+    post:
+      summary: Execute an Order
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order_id:
+                  $ref: "#/components/schemas/ID"
+                auth_code:
+                  $ref: "#/components/schemas/AuthCode"
+              required:
+                - order_id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    $ref: "#/components/schemas/Order"
+  /v1/helper/blockchain/address/validate/:
+    post:
+      summary: Validate a Blockchain Address
+      tags:
+        - Helper
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                network:
+                  $ref: "#/components/schemas/Network"
+                address:
+                  $ref: "#/components/schemas/Address"
+              required:
+                - currency
+                - address
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      is_valid:
+                        type: boolean
+                      address:
+                        $ref: "#/components/schemas/Address"
+  /v1/s2s/portfolio/currency/get/:
+    post:
+      summary: Get User Currency Info
+      tags:
+        - S2S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uid:
+                  $ref: "#/components/schemas/ID"
+                currency:
+                  $ref: "#/components/schemas/Currency"
+              required:
+                - uid
+                - currency
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      currency:
+                        $ref: "#/components/schemas/Currency"
+                      price_usd:
+                        $ref: "#/components/schemas/Decimal"
+                      price_usdt:
+                        $ref: "#/components/schemas/Decimal"
+                      account_no:
+                        $ref: "#/components/schemas/Address"
+                      balance:
+                        $ref: "#/components/schemas/Decimal"
+  /v1/s2s/payment/order/init/:
+    post:
+      summary: Init a new Order
+      tags:
+        - S2S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uid:
+                  $ref: "#/components/schemas/ID"
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                src_channel_type:
+                  $ref: "#/components/schemas/ChannelType"
+                src_channel_id:
+                  type: integer
+                src_channel_ref:
+                  $ref: "#/components/schemas/Reference"
+                src_channel_amount:
+                  $ref: "#/components/schemas/Decimal"
+                src_channel_context:
+                  type: object
+                dst_channel_type:
+                  $ref: "#/components/schemas/ChannelType"
+                dst_channel_id:
+                  type: integer
+                dst_channel_ref:
+                  $ref: "#/components/schemas/Reference"
+                dst_channel_amount:
+                  $ref: "#/components/schemas/Decimal"
+                dst_channel_context:
+                  type: object
+                amount_sub_total:
+                  $ref: "#/components/schemas/Decimal"
+                amount_total:
+                  $ref: "#/components/schemas/Decimal"
+                note:
+                  $ref: "#/components/schemas/Note"
+              required:
+                - uid
+                - currency
+                - src_channel_type
+                - src_channel_amount
+                - dst_channel_type
+                - dst_channel_amount
+                - amount_sub_total
+                - amount_total
+            examples:
+              transfer_p2p:
+                value:
+                  {
+                    "uid": 1,
+                    "currency": "TORQ",
+                    "src_channel_type": 10000,
+                    "src_channel_amount": "12.34567898",
+                    "dst_channel_type": 100002,
+                    "dst_channel_amount": "12.34567898",
+                    "dst_channel_context":
+                      {
+                        "note": "Hello World!",
+                        "user_identity": "powerman",
+                      },
+                    "amount_sub_total": "12.34567898",
+                    "amount_total": "12.34567898",
+                    "note": "Test transfer",
+                  }
+              profit_reinvest:
+                value:
+                  {
+                    "uid": 1,
+                    "currency": "TORQ",
+                    "src_channel_type": 10000,
+                    "src_channel_amount": "20",
+                    "dst_channel_type": 100100,
+                    "dst_channel_amount": "20",
+                    "dst_channel_context":
+                      {
+                        "user_identity": "powerman",
+                        "currency": "USDT",
+                        "exchange_rate": "0.05",
+                      },
+                    "amount_sub_total": "20",
+                    "amount_total": "20",
+                    "note": "Test reinvest USDT",
+                  }
+              profit_withdraw:
+                value:
+                  {
+                    "uid": 1,
+                    "currency": "TORQ",
+                    "src_channel_type": 10000,
+                    "src_channel_amount": "25",
+                    "dst_channel_type": 100101,
+                    "dst_channel_amount": "25",
+                    "dst_channel_context":
+                      {
+                        "address": "0x83a7663b2b9d6d3f377a41d03b03ba0021e2f831",
+                        "currency": "USDT",
+                        "exchange_rate": "0.05",
+                      },
+                    "amount_sub_total": "25",
+                    "amount_total": "25",
+                    "note": "Test profit withdraw to USDT",
+                  }
+              blockchain_txn:
+                value:
+                  {
+                    "uid": 1,
+                    "currency": "USDT",
+                    "src_channel_type": 10003,
+                    "src_channel_amount": "1",
+                    "dst_channel_type": 100003,
+                    "dst_channel_amount": "1",
+                    "dst_channel_context":
+                      {
+                        "to_address": "0xf12Db5BeC81DD6f41366EbcC599508212b751479",
+                      },
+                    "amount_sub_total": "1",
+                    "amount_total": "1",
+                    "note": "Test submit USDT txn",
+                  }
+              torque_purchase:
+                value:
+                  {
+                    "uid": 1,
+                    "currency": "USDT",
+                    "src_channel_type": 10003,
+                    "src_channel_amount": "2",
+                    "dst_channel_type": 100004,
+                    "dst_channel_amount": "2",
+                  }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      order_id:
+                        $ref: "#/components/schemas/ID"
+  /v1/s2s/payment/order/execute/:
+    post:
+      summary: Execute an Order
+      tags:
+        - S2S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uid:
+                  $ref: "#/components/schemas/ID"
+                order_id:
+                  $ref: "#/components/schemas/ID"
+              required:
+                - uid
+                - order_id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    $ref: "#/components/schemas/Order"
+  /v1/s2s/helper/blockchain/address/validate/:
+    post:
+      summary: Validate a Blockchain Address
+      tags:
+        - S2S
+        - Helper
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                network:
+                  $ref: "#/components/schemas/Network"
+                address:
+                  $ref: "#/components/schemas/Address"
+              required:
+                - currency
+                - address
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      is_valid:
+                        type: boolean
+                      address:
+                        $ref: "#/components/schemas/Address"
+  /v1/s2s/meta/handshake/:
+    post:
+      summary: Init meta data
+      tags:
+        - S2S
+        - Meta
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      features:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                              example: kyc
+                            name:
+                              type: string
+                              example: KYC
+                            is_available:
+                              type: boolean
+                      blockchain_networks:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            code:
+                              $ref: "#/components/schemas/Network"
+                            currency:
+                              $ref: "#/components/schemas/Currency"
+                            name:
+                              type: string
+                              example: Ethereum
+                            token_transfer_code_name:
+                              type: string
+                              example: ERC20
+                      network_currencies:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            currency:
+                              $ref: "#/components/schemas/Currency"
+                            network:
+                              $ref: "#/components/schemas/Network"
+                            priority:
+                              type: integer
+                              example: 2
+                            withdrawal_fee:
+                              $ref: "#/components/schemas/Decimal"
+  /v1/s2s/meta/currency-info/:
+    post:
+      summary: Get system currency info
+      tags:
+        - S2S
+        - Meta
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      currencies:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CurrencyInfo"
+  /v1/s2s/risk/action-lock/get/:
+    post:
+      summary: Checkout status user action
+      tags:
+        - S2S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uid:
+                  $ref: "#/components/schemas/ID"
+                action_type:
+                  $ref: "#/components/schemas/LockAction"
+              required:
+                - uid
+                - action_type
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/Errors"
+                  data:
+                    type: object
+                    properties:
+                      is_locked:
+                        type: boolean

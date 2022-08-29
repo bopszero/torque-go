@@ -1,0 +1,224 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Torque Tree Service
+servers:
+  - url: "/"
+components:
+  schemas:
+    ID:
+      type: integer
+      minimum: 1
+      example: 8466032601
+    Decimal:
+      type: string
+      description: Decimal number in string
+      example: "14211.364041"
+    Errors:
+      type: array
+      items:
+        type: string
+        example: Field validation for 'user_id' failed on the 'required' tag.
+    Node:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id:
+              $ref: "#/components/schemas/ID"
+            username:
+              type: string
+              example: helloworld
+            first_name:
+              type: string
+              example: world
+            last_name:
+              type: string
+              example: hello
+            email:
+              type: string
+              example: abc@gmail.com
+            referral_code:
+              type: integer
+              example: 987654321
+            type:
+              type: integer
+              enum:
+                - 1
+                - 2
+                - 3
+                - 4
+                - 5
+                - 6
+            create_time:
+              type: integer
+              example: 1581354000
+          required:
+            - id
+            - username
+            - first_name
+            - last_name
+            - email
+            - referral_code
+            - type
+            - create_time
+        user_id:
+          type: integer
+        username:
+          type: string
+          example: helloworld
+        user_role:
+          type: string
+          example: agent
+        balance_usd:
+          $ref: "#/components/schemas/Decimal"
+        coin_balance_map:
+          $ref: "#/components/schemas/CoinBalanceMap"
+        children_balance_usd:
+          $ref: "#/components/schemas/Decimal"
+        coin_children_balance_map:
+          $ref: "#/components/schemas/CoinBalanceMap"
+        descendants_count:
+          type: integer
+        level:
+          type: integer
+        children:
+          type: array
+          items:
+            type: object
+            nullable: true
+            $ref: "#/components/schemas/Node"
+      required:
+        - user
+        - user_id
+        - username
+        - user_role
+        - level
+    CoinBalanceMap:
+      type: object
+      properties:
+        LTC:
+          $ref: "#/components/schemas/Decimal"
+        BTC:
+          $ref: "#/components/schemas/Decimal"
+        ETH:
+          $ref: "#/components/schemas/Decimal"
+        USDT:
+          $ref: "#/components/schemas/Decimal"
+      required:
+        - LTC
+        - BTC
+        - ETH
+        - USDT
+paths:
+  /v1/basic/get_node_down/:
+    post:
+      summary: Collect info on user's down tree
+      tags:
+        - Basic
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  $ref: "#/components/schemas/ID"
+                options:
+                  type: object
+                  properties:
+                    root_uid:
+                      $ref: "#/components/schemas/ID"
+                    limit_level:
+                      type: integer
+                      description: Depth limit of the result tree
+                      example: 7
+                    get_coin_map:
+                      type: boolean
+                    get_children_coin_map:
+                      type: boolean
+                    use_raw_coin_map:
+                      type: boolean
+                    fetch_root_only:
+                      type: boolean
+              required:
+                - user_id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/Errors"
+                  data:
+                    type: object
+                    nullable: true
+                    properties:
+                      node:
+                        $ref: "#/components/schemas/Node"
+                    required:
+                      - node
+  /v1/promotion/stats/get/:
+    post:
+      summary: Get user promotion stats
+      tags:
+        - Promotion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uid:
+                  $ref: "#/components/schemas/ID"
+              required:
+                - uid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/Errors"
+                  data:
+                    type: object
+                    nullable: true
+                    properties:
+                      stats:
+                        type: object
+                        properties:
+                          uid:
+                            $ref: "#/components/schemas/ID"
+                          down_line_stats_list:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                from_tier:
+                                  type: string
+                                  example: global_partner
+                                to_tier:
+                                  type: string
+                                  example: mentor
+                                uids:
+                                  type: array
+                                  items:
+                                    $ref: "#/components/schemas/ID"
+                              required:
+                                - from_tier
+                                - to_tier
+                                - uids
+                        required:
+                          - uid
+                          - down_line_stats_list
+                    required:
+                      - stats

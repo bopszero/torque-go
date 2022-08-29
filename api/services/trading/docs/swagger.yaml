@@ -1,0 +1,139 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Torque Wallet Service
+servers:
+  - url: "/"
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Paging:
+      type: object
+      properties:
+        limit:
+          type: integer
+          example: 10
+        offset:
+          type: integer
+          example: 0
+        before_id:
+          type: integer
+        after_id:
+          type: integer
+      required:
+        - limit
+    Decimal:
+      type: string
+      description: Decimal number in string
+      example: "14211.364041"
+    ResponseMessage:
+      type: string
+      example: "Field validation for 'user_id' failed on the 'required' tag."
+    ID:
+      type: integer
+      minimum: 1
+      example: 8466032601
+    Reference:
+      type: string
+      example: "9127400572"
+    Currency:
+      type: string
+      enum:
+        - BTC
+        - BCH
+        - LTC
+        - ETH
+        - TRX
+        - USDT
+        - TORQ
+    Network:
+      type: string
+      enum:
+        - BTC:TESTNET
+        - BTC
+        - BCH:TESTNET
+        - BCH
+        - LTC:TESTNET
+        - LTC
+        - ETH:TEST_ROPSTEN
+        - ETH
+        - TRX:TEST_SHASTA
+        - TRX
+        - TORQ
+    Address:
+      type: string
+      minLength: 16
+      maxLength: 255
+      example: bc1q74m8sy7dpqwuegcrddfwqp3gzwau62k7rys0my
+    Timestamp:
+      type: integer
+      example: 1578396200
+    AuthCode:
+      type: string
+      minLength: 6
+      maxLength: 6
+      example: "111111"
+    Note:
+      type: string
+      example: I lay my love on you...
+    Token32:
+      type: string
+      example: "b5bac6a21c124fbaa56b7688720cf407"
+security:
+  - BearerAuth: [ ]
+paths:
+  /v1/txn/deposit/export/:
+    post:
+      summary: Generate Deposit export token
+      tags:
+        - Transaction
+        - Deposit
+      responses:
+        "200":
+          description: OK
+  /v1/txn/deposit/export/{token}/:
+    post:
+      summary: Download Deposit report
+      tags:
+        - Transaction
+        - Deposit
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            $ref: "#/components/schemas/Token32"
+      responses:
+        "200":
+          description: Exported file binary data
+        "500":
+          description: Server error
+  /v1/txn/withdrawal/export/:
+    post:
+      summary: Generate Withdrawal export token
+      tags:
+        - Transaction
+        - Withdrawal
+      responses:
+        "200":
+          description: OK
+  /v1/txn/withdrawal/export/{token}/:
+    post:
+      summary: Download Withdrawal report
+      tags:
+        - Transaction
+        - Withdrawal
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            $ref: "#/components/schemas/Token32"
+      responses:
+        "200":
+          description: Exported file binary data
+        "500":
+          description: Server error

@@ -1,0 +1,57 @@
+module gitlab.com/snap-clickstaff/torque-go
+
+go 1.13
+
+require (
+	github.com/adjust/rmq/v4 v4.0.0
+	github.com/adshao/go-binance/v2 v2.2.0
+	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+	github.com/btcsuite/btcd v0.21.0-beta
+	github.com/btcsuite/btcutil v1.0.2
+	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
+	github.com/ethereum/go-ethereum v1.9.25
+	github.com/fbsobreira/gotron-sdk v0.0.0-20201228180255-4c6c1768cd2a
+	github.com/gcash/bchd v0.17.2-0.20201218180520-5708823e0e99
+	github.com/gcash/bchutil v0.0.0-20210113190856-6ea28dff4000
+	github.com/getsentry/sentry-go v0.9.0
+	github.com/go-playground/validator/v10 v10.4.1
+	github.com/go-redis/redis/v8 v8.4.10
+	github.com/go-redsync/redsync/v4 v4.0.4
+	github.com/go-resty/resty/v2 v2.4.0
+	github.com/go-sql-driver/mysql v1.5.0
+	github.com/golang/protobuf v1.4.3
+	github.com/graphql-go/graphql v0.7.9
+	github.com/graphql-go/handler v0.2.3
+	github.com/jinzhu/copier v0.2.3
+	github.com/jolestar/go-commons-pool v1.1.2
+	github.com/jszwec/csvutil v1.4.0
+	github.com/labstack/echo/v4 v4.1.17
+	github.com/ltcsuite/ltcd v0.20.1-beta
+	github.com/nicksnyder/go-i18n/v2 v2.1.2
+	github.com/oschwald/maxminddb-golang v1.8.0
+	github.com/panjf2000/ants/v2 v2.4.3
+	github.com/pquerna/otp v1.3.0
+	github.com/robfig/cron/v3 v3.0.1
+	github.com/rubblelabs/ripple v0.0.0-20201117074841-9986319d8580
+	github.com/shopspring/decimal v1.2.0
+	github.com/sirupsen/logrus v1.7.0
+	github.com/spf13/cobra v1.1.1
+	github.com/spf13/viper v1.7.1
+	github.com/stretchr/testify v1.6.1
+	github.com/swaggo/echo-swagger v1.1.0
+	github.com/swaggo/swag v1.7.0
+	github.com/ua-parser/uap-go v0.0.0-20210121150957-347a3497cc39
+	github.com/vmihailenco/msgpack/v5 v5.1.4
+	github.com/willf/bitset v1.1.11 // indirect
+	gitlab.com/snap-clickstaff/go-common v0.3.15
+	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
+	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
+	golang.org/x/sys v0.0.0-20210301091718-77cc2087c03b
+	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324
+	google.golang.org/api v0.37.0
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
+	gopkg.in/tucnak/telebot.v2 v2.3.5
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	gorm.io/driver/mysql v1.0.3
+	gorm.io/gorm v1.20.11
+)

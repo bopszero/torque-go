@@ -1,0 +1,110 @@
+APP_NAME: torque_go
+SECRET_KEY: aaaaa
+
+REGION: VN
+LANGUAGE_CODE: vi
+TIME_ZONE: Asia/Ho_Chi_Minh
+CURRENCY: VND
+BASE_DOMAIN: torquebot.net
+
+ENV: dev
+DEBUG: true
+TEST: true
+
+DB_CONNECTION_MAP:
+  default: mysql://root:Root123!@#@(127.0.0.1:3306)/torque?parseTime=true&collation=utf8mb4_unicode_ci
+DB_POOL_OPTIONS:
+  pool_size: 5
+  recycle: 300
+  max_size: 50
+
+CACHE_MAP:
+  default: "redis://127.0.0.1:6379/?db=1&prefix=torque_go:"
+  remote: "redis://127.0.0.1:6379/?db=1&prefix=torque-go:&pool_size=20&dial_timeout=2s&read_timeout=5s&min_idle_conns=10&max_conn_age=5m&idle_timeout=2m"
+
+AUTH_ACCESS_SECRET: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+AUTH_ACCESS_TIMEOUT: 5m
+AUTH_REFRESH_SECRET: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+AUTH_REFRESH_TIMEOUT: 336h
+
+LOG_FILE: ./torque.log
+SENTRY_DSN:
+MSG_QUEUE_DSN: redis://127.0.0.1:6379/?key_prefix=local&db=3&pool_size=20&dial_timeout=2s&read_timeout=5s&min_idle_conns=10&max_conn_age=5m&idle_timeout=2m
+REDLOCK_DSN: redis://127.0.0.1:6379/?key_prefix=torque-local&lock_timeout=8s&retry_delay=500ms&db=2&pool_size=20&dial_timeout=2s&read_timeout=5s&min_idle_conns=10&max_conn_age=5m&idle_timeout=2m
+JUMIO_DSN:
+EMAIL_DSN:
+
+BLOCKCHAIN_SECRET: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+SYSTEM_WITHDRAWAL_SECRET: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+TELE_BOT_HEALTH_TOKEN: aaaaa
+TELE_BOT_HEALTH_RECIPIENT_ID: 00000
+TREE_REFRESH_DURATION: 5m
+BLOCKCHAIN_USE_TESTNET: true
+
+TORQUE_PURCHASE_COMPANY_ADDRESS_MAP:
+  BTC@BTC: aaaaa
+  LTC@LTC: aaaaa
+  ETH@ETH: aaaaa
+  USDT@ETH: aaaaa
+
+SYSTEM_FORWARDING_CONFIG_MAP:
+  BTC@BTC:
+    api_provider: mycoingate
+    address: "mvVBfUSjRdhFmzapBDbirEBHtH3AprMPfb"
+    txn_count_min_threshold: 200
+    amount_min_threshold: "0.0005"
+  LTC@LTC:
+    api_provider: mycoingate
+    address: "mq1FzL41V5oPbxZ5oVHr4fxcCiDkJ5HmaV"
+    txn_count_min_threshold: 200
+    amount_min_threshold: "0.002"
+  ETH@ETH:
+    api_provider: mycoingate
+    address: "0x26DE57A94CF1677FF735178E5eDE728279Bbc6d5"
+    txn_count_max_threshold: 20
+    amount_min_threshold: "0.01"
+  USDT@ETH:
+    api_provider: mycoingate
+    address: "0x26DE57A94CF1677FF735178E5eDE728279Bbc6d5"
+    txn_count_max_threshold: 20
+    amount_min_threshold: "10"
+    fee_key: "0x4de821cc5dd2a7dd7099a5fc13edb6440aa90931effb4b2f748180cbc8fc31d9"
+
+SYSTEM_WITHDRAWAL_CONFIG_MAP:
+  BTC@BTC:
+    pull_address: "mvVBfUSjRdhFmzapBDbirEBHtH3AprMPfb"
+  LTC@LTC:
+    pull_address: "mq1FzL41V5oPbxZ5oVHr4fxcCiDkJ5HmaV"
+  ETH@ETH:
+    pull_address: "0x26de57a94cf1677ff735178e5ede728279bbc6d5"
+  USDT@ETH:
+    pull_address: "0x26de57a94cf1677ff735178e5ede728279bbc6d5"
+
+BONUS_POOL_LEADER_CONFIG:
+  default_tier_rate_map:
+    market_leader: 0.35
+    region_leader: 0.1
+    global_leader: 0.05
+
+SERVICE_WEB_URI: https://torquebot.net
+SERVICE_WEB_MAC_SECRET: 000000000000000000000000000000000000
+SERVICE_TREE_BASE_URL: http://tree.torquebot.net
+SERVICE_TRANSACTION_MAC_SECRET: 000000000000000000000000000000000000
+SERVICE_WALLET_MAC_SECRET: 000000000000000000000000000000000000
+SERVICE_AUTH_MAC_SECRET: 000000000000000000000000000000000000
+SERVICE_PUSH_URI: https://notification.torquebot.net
+SERVICE_PUSH_MAC_SECRET: 000000000000000000000000000000000000
+SERVICE_GOOGLE_FIREBASE_JSON_KEY_PATH: /opt/torque-wallet-e227b99a37e5.json
+
+API_SNAP_NODE_KEY: 000000000000000000000000000000000000
+API_BLOCKCHAIN_INFO_KEY: 000000000000000000000000000000000000
+API_ETHERSCAN_KEY: 0000000000000000000000000000000000
+API_BLOCK_CYPHER_KEY: 0000000000000000000000000000000000
+API_CRYPTO_COMPARE_KEY: 000000000000000000000000000000000000
+API_BINANCE_KEY: 000000000000000000000000000000000000
+API_BINANCE_SECRET: 000000000000000000000000000000000000
+
+GEO_IP_DB_PATH: D:/abc.mmdb
+
+

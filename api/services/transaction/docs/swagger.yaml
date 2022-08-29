@@ -1,0 +1,1297 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Torque Transaction Service
+servers:
+  - url: /
+components:
+  schemas:
+    ResponseCode:
+      type: string
+      example: success
+    ResponseMessage:
+      type: string
+      example: "Field validation for 'user_id' failed on the 'required' tag."
+    Decimal:
+      type: string
+      description: Decimal number in string
+      example: "14211.364041"
+    ID:
+      type: integer
+      minimum: 1
+      example: 8466032601
+    Date:
+      type: string
+      format: date
+      example: "2020-12-01"
+    Reference:
+      type: string
+      example: "123456789"
+    Currency:
+      type: string
+      enum:
+        - BTC
+        - BCH
+        - LTC
+        - ETH
+        - TRX
+        - USDT
+        - TORQ
+    Timestamp:
+      type: integer
+      example: 1578396200
+    Note:
+      type: string
+      example: I lay my love on you...
+    Network:
+      type: string
+      enum:
+        - BTC
+        - BTC:TESTNET
+        - BCH
+        - BCH:TESTNET
+        - LTC
+        - LTC:TESTNET
+        - ETH
+        - ETH:TEST_ROPSTEN
+        - TRX
+        - TRX:TEST_SHASTA
+        - XRP
+        - XRP:TESTNET
+        - TORQ
+    UserTierType:
+      type: integer
+      enum:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 6
+        - 7
+      description: |
+        * 1 - Agent
+        * 2 - Senior Partner / Market Leader
+        * 3 - Regional Leader
+        * 4 - Governor
+        * 6 - Global Leader
+        * 7 - Mentor
+    TypeCode:
+      type: string
+      enum:
+        - cr_system
+        - cr_transfer
+        - cr_deposit
+        - cr_withdraw_investment_reverse
+        - cr_daily_profit
+        - cr_affiliate_commission
+        - cr_leader_commission
+        - cr_reinvest_src_reverse
+        - cr_reinvest_dst
+        - cr_withdraw_profit_reverse
+        - cr_promo_code
+        - cr_product_travel_ticket_refund
+        - cr_product_mall_order_refund
+        - cr_product_flight_ticket_refund
+        - dr_system
+        - dr_transfer
+        - dr_deposit_reverse
+        - dr_withdraw_investment
+        - dr_daily_profit_reverse
+        - dr_affiliate_commission_reverse
+        - dr_leader_commission_reverse
+        - dr_reinvest_src
+        - dr_withdraw_profit
+        - dr_product_event_ticket
+        - dr_product_travel_ticket
+        - dr_product_mall_order
+        - dr_product_flight_ticket
+    Address:
+      type: string
+      minLength: 16
+      maxLength: 255
+      example: bc1q74m8sy7dpqwuegcrddfwqp3gzwau62k7rys0my
+    TxnHash:
+      type: string
+      minLength: 32
+      maxLength: 128
+      example: 947cfb43f4d3bea439f5045f9c47e811a47dae26e2976be0ef56d5e058f81e0a
+    FeeInfo:
+      type: object
+      properties:
+        currency:
+          $ref: "#/components/schemas/Currency"
+        price:
+          $ref: "#/components/schemas/Decimal"
+        price_high:
+          $ref: "#/components/schemas/Decimal"
+        price_low:
+          $ref: "#/components/schemas/Decimal"
+        limit_max_quantity:
+          type: integer
+        limit_min_value:
+          $ref: "#/components/schemas/Decimal"
+        limit_max_value:
+          $ref: "#/components/schemas/Decimal"
+        base_currency:
+          $ref: "#/components/schemas/Currency"
+        to_base_multiple:
+          $ref: "#/components/schemas/Decimal"
+      required:
+        - currency
+        - price
+        - price_high
+        - price_low
+        - limit_max_quantity
+        - limit_min_value
+        - limit_max_value
+    BonusPoolLeaderTierInfo:
+      type: object
+      properties:
+        tier_type:
+          $ref: "#/components/schemas/UserTierType"
+        uids:
+          type: array
+          items:
+            $ref: "#/components/schemas/ID"
+        rate:
+          $ref: "#/components/schemas/Decimal"
+        additional_user_info_list:
+          type: array
+          items:
+            type: object
+            properties:
+              uid:
+                $ref: "#/components/schemas/ID"
+              note:
+                $ref: "#/components/schemas/Note"
+      required:
+        - tier_type
+        - uids
+        - rate
+    BonusPoolLeaderExecutionStatus:
+      type: integer
+      enum:
+        - 1
+        - 2
+        - 10
+      description: |
+        * 1 - Init
+        * 2 - Executing
+        * 10 - Completed
+paths:
+  /v1/balance/user/get/:
+    post:
+      summary: Get a User balance
+      tags:
+        - Balance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                uid:
+                  $ref: "#/components/schemas/ID"
+              required:
+                - uid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      balances:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            uid:
+                              $ref: "#/components/schemas/ID"
+                            currency:
+                              $ref: "#/components/schemas/Currency"
+                            amount:
+                              $ref: "#/components/schemas/Decimal"
+                            update_time:
+                              $ref: "#/components/schemas/Timestamp"
+  /v1/balance/txn/add/:
+    post:
+      summary: Add a Balance Transaction
+      tags:
+        - Balance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                uid:
+                  $ref: "#/components/schemas/ID"
+                amount:
+                  $ref: "#/components/schemas/Decimal"
+                type_code:
+                  $ref: "#/components/schemas/TypeCode"
+                ref:
+                  $ref: "#/components/schemas/Reference"
+              required:
+                - currency
+                - uid
+                - amount
+                - type
+                - ref
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    nullable: true
+                    properties:
+                      txn:
+                        type: object
+                        properties:
+                          id:
+                            $ref: "#/components/schemas/ID"
+                          user_id:
+                            $ref: "#/components/schemas/ID"
+                          parent_id:
+                            $ref: "#/components/schemas/ID"
+                          currency:
+                            $ref: "#/components/schemas/Currency"
+                          amount:
+                            $ref: "#/components/schemas/Decimal"
+                          balance:
+                            $ref: "#/components/schemas/Decimal"
+                          type_code:
+                            $ref: "#/components/schemas/TypeCode"
+                          ref:
+                            $ref: "#/components/schemas/Reference"
+  /v1/payment/investment/deposit/account/get/:
+    post:
+      summary: Get user Deposit account
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uid:
+                  $ref: "#/components/schemas/ID"
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                network:
+                  $ref: "#/components/schemas/Network"
+              required:
+                - uid
+                - currency
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      uid:
+                        $ref: "#/components/schemas/ID"
+                      currency:
+                        $ref: "#/components/schemas/Currency"
+                      network:
+                        $ref: "#/components/schemas/Network"
+                      address:
+                        $ref: "#/components/schemas/Address"
+                      create_time:
+                        $ref: "#/components/schemas/Timestamp"
+  /v1/payment/investment/deposit/crawl/:
+    post:
+      summary: Crawl deposits from a Block
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                network:
+                  $ref: "#/components/schemas/Network"
+                block_height:
+                  type: integer
+              required:
+                - currency
+                - network
+                - block_height
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    $ref: "#/components/schemas/ResponseCode"
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+  /v1/payment/investment/deposit/submit/:
+    post:
+      summary: Submit a new Deposit
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uid:
+                  $ref: "#/components/schemas/ID"
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                network:
+                  $ref: "#/components/schemas/Network"
+                txn_hash:
+                  $ref: "#/components/schemas/TxnHash"
+                txn_index:
+                  type: integer
+                address:
+                  $ref: "#/components/schemas/Address"
+                amount:
+                  $ref: "#/components/schemas/Decimal"
+              required:
+                - uid
+                - currency
+                - txn_hash
+                - address
+                - amount
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    $ref: "#/components/schemas/ResponseCode"
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        $ref: "#/components/schemas/ID"
+                      coin_id:
+                        type: integer
+                        example: 2
+                      currency:
+                        $ref: "#/components/schemas/Currency"
+                      network:
+                        $ref: "#/components/schemas/Network"
+                      uid:
+                        $ref: "#/components/schemas/ID"
+                      status:
+                        type: string
+                        example: "Under Processing"
+                      txn_hash:
+                        $ref: "#/components/schemas/TxnHash"
+                      txn_index:
+                        type: integer
+                      address:
+                        $ref: "#/components/schemas/Address"
+                      amount:
+                        $ref: "#/components/schemas/Decimal"
+                      create_time:
+                        $ref: "#/components/schemas/Timestamp"
+  /v1/payment/investment/deposit/approve/:
+    post:
+      summary: Approve a Deposit
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  $ref: "#/components/schemas/ID"
+                note:
+                  $ref: "#/components/schemas/Note"
+              required:
+                - id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    $ref: "#/components/schemas/ResponseCode"
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+  /v1/payment/investment/withdraw/submit/:
+    post:
+      summary: Add a Investment Withdraw request
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uid:
+                  $ref: "#/components/schemas/ID"
+                amount:
+                  $ref: "#/components/schemas/Decimal"
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                address:
+                  $ref: "#/components/schemas/Address"
+              required:
+                - currency
+                - uid
+                - amount
+                - address
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      withdraw_request:
+                        type: object
+                        properties:
+                          id:
+                            $ref: "#/components/schemas/ID"
+                          code:
+                            type: string
+                            example: C-200508-939264
+                          uid:
+                            $ref: "#/components/schemas/ID"
+                          amount:
+                            $ref: "#/components/schemas/Decimal"
+                          currency:
+                            $ref: "#/components/schemas/Currency"
+                          address:
+                            $ref: "#/components/schemas/Address"
+                          status:
+                            type: string
+                          create_time:
+                            $ref: "#/components/schemas/Timestamp"
+  /v1/payment/investment/withdraw/reject/:
+    post:
+      summary: Reject a Investment Withdraw request
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  $ref: "#/components/schemas/ID"
+                note:
+                  $ref: "#/components/schemas/Note"
+              required:
+                - id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+  /v1/payment/profit/withdraw/submit/:
+    post:
+      summary: Add a Profit Withdraw request
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uid:
+                  $ref: "#/components/schemas/ID"
+                amount:
+                  $ref: "#/components/schemas/Decimal"
+                exchange_rate:
+                  $ref: "#/components/schemas/Decimal"
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                address:
+                  $ref: "#/components/schemas/Address"
+              required:
+                - currency
+                - uid
+                - amount
+                - exchange_rate
+                - currency_amount
+                - address
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      withdraw_request:
+                        type: object
+                        properties:
+                          id:
+                            $ref: "#/components/schemas/ID"
+                          code:
+                            type: string
+                            example: T-200508-170535
+                          uid:
+                            $ref: "#/components/schemas/ID"
+                          amount:
+                            $ref: "#/components/schemas/Decimal"
+                          exchange_rate:
+                            $ref: "#/components/schemas/Decimal"
+                          currency:
+                            $ref: "#/components/schemas/Currency"
+                          currency_amount:
+                            $ref: "#/components/schemas/Decimal"
+                          address:
+                            $ref: "#/components/schemas/Address"
+                          status:
+                            type: string
+                          create_time:
+                            $ref: "#/components/schemas/Timestamp"
+  /v1/payment/profit/withdraw/reject/:
+    post:
+      summary: Reject a Profit Withdraw request
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  $ref: "#/components/schemas/ID"
+                note:
+                  $ref: "#/components/schemas/Note"
+              required:
+                - id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+  /v1/payment/profit/reinvest/submit/:
+    post:
+      summary: Add a Profit Reinvest request
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uid:
+                  $ref: "#/components/schemas/ID"
+                amount:
+                  $ref: "#/components/schemas/Decimal"
+                exchange_rate:
+                  $ref: "#/components/schemas/Decimal"
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                address:
+                  $ref: "#/components/schemas/Address"
+              required:
+                - currency
+                - uid
+                - amount
+                - exchange_rate
+                - currency_amount
+                - address
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      reinvest_request:
+                        type: object
+                        properties:
+                          id:
+                            $ref: "#/components/schemas/ID"
+                          uid:
+                            $ref: "#/components/schemas/ID"
+                          amount:
+                            $ref: "#/components/schemas/Decimal"
+                          exchange_rate:
+                            $ref: "#/components/schemas/Decimal"
+                          currency:
+                            $ref: "#/components/schemas/Currency"
+                          currency_amount:
+                            $ref: "#/components/schemas/Decimal"
+                          address:
+                            $ref: "#/components/schemas/Address"
+                          status:
+                            type: string
+                          create_time:
+                            $ref: "#/components/schemas/Timestamp"
+  /v1/payment/profit/reinvest/approve/:
+    post:
+      summary: Approve a Profit Reinvest request
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  $ref: "#/components/schemas/ID"
+                note:
+                  $ref: "#/components/schemas/Note"
+              required:
+                - id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+  /v1/payment/profit/reinvest/reject/:
+    post:
+      summary: Reject a Profit Reinvest request
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  $ref: "#/components/schemas/ID"
+                note:
+                  $ref: "#/components/schemas/Note"
+              required:
+                - id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+  /v1/payment/p2p/transfer/:
+    post:
+      summary: Transfer currency to another account
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                from_uid:
+                  $ref: "#/components/schemas/ID"
+                from_currency:
+                  $ref: "#/components/schemas/Currency"
+                from_amount:
+                  $ref: "#/components/schemas/Decimal"
+                to_uid:
+                  $ref: "#/components/schemas/ID"
+                to_currency:
+                  $ref: "#/components/schemas/Currency"
+                exchange_rate:
+                  $ref: "#/components/schemas/Decimal"
+                fee_amount:
+                  $ref: "#/components/schemas/Decimal"
+                note:
+                  $ref: "#/components/schemas/Note"
+              required:
+                - from_uid
+                - from_currency
+                - from_amount
+                - to_uid
+                - to_currency
+                - to_amount
+                - exchange_rate
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      transfer:
+                        type: object
+                        properties:
+                          id:
+                            $ref: "#/components/schemas/ID"
+                          from_uid:
+                            $ref: "#/components/schemas/ID"
+                          from_currency:
+                            $ref: "#/components/schemas/Currency"
+                          from_amount:
+                            $ref: "#/components/schemas/Decimal"
+                          to_uid:
+                            $ref: "#/components/schemas/ID"
+                          to_currency:
+                            $ref: "#/components/schemas/Currency"
+                          to_amount:
+                            $ref: "#/components/schemas/Decimal"
+                          exchange_rate:
+                            $ref: "#/components/schemas/Decimal"
+                          fee_amount:
+                            $ref: "#/components/schemas/Decimal"
+                          note:
+                            $ref: "#/components/schemas/Note"
+                          status:
+                            type: integer
+                          create_time:
+                            $ref: "#/components/schemas/Timestamp"
+  /v1/payment/promo-code/redeem/:
+    post:
+      summary: Redeem a Promo code
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uid:
+                  $ref: "#/components/schemas/ID"
+                code:
+                  type: string
+                  example: AbcxYZ
+              required:
+                - uid
+                - code
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      redemption:
+                        type: object
+                        properties:
+                          id:
+                            $ref: "#/components/schemas/ID"
+                          uid:
+                            $ref: "#/components/schemas/ID"
+                          code:
+                            type: string
+                          create_time:
+                            $ref: "#/components/schemas/Timestamp"
+  /v1/system/withdrawal/account/generate/:
+    post:
+      summary: Generate a new System withdrawal account
+      tags:
+        - System
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                network:
+                  $ref: "#/components/schemas/Network"
+              required:
+                - uid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      currency:
+                        $ref: "#/components/schemas/Currency"
+                      network:
+                        $ref: "#/components/schemas/Network"
+                      account_no:
+                        $ref: "#/components/schemas/Address"
+  /v1/system/withdrawal/account/get/:
+    post:
+      summary: Get the current active System withdrawal account
+      tags:
+        - System
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                network:
+                  $ref: "#/components/schemas/Network"
+              required:
+                - currency
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      currency:
+                        $ref: "#/components/schemas/Currency"
+                      network:
+                        $ref: "#/components/schemas/Network"
+                      account_no:
+                        $ref: "#/components/schemas/Address"
+                      pull_address:
+                        $ref: "#/components/schemas/Address"
+  /v1/system/withdrawal/account/pull/:
+    post:
+      summary: Pull a System withdrawal address balance to a pre-defined system address
+      tags:
+        - System
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                network:
+                  $ref: "#/components/schemas/Network"
+                account_no:
+                  $ref: "#/components/schemas/Address"
+                pull_address:
+                  $ref: "#/components/schemas/Address"
+              required:
+                - currency
+                - account_no
+                - pull_address
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      currency:
+                        $ref: "#/components/schemas/Currency"
+                      network:
+                        $ref: "#/components/schemas/Network"
+                      hash:
+                        type: string
+                        example: 947cfb43f4d3bea439f5045f9c47e811a47dae26e2976be0ef56d5e058f81e0a
+  /v1/system/withdrawal/transfer/meta/:
+    post:
+      summary: Get System withdrawal meta data
+      tags:
+        - System
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      currencies:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            currency:
+                              $ref: "#/components/schemas/Currency"
+                            network:
+                              $ref: "#/components/schemas/Network"
+                            fee_info:
+                              $ref: "#/components/schemas/FeeInfo"
+  /v1/system/withdrawal/transfer/submit/:
+    post:
+      summary: Submit a System withdrawal request
+      tags:
+        - System
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                request_uid:
+                  $ref: "#/components/schemas/ID"
+                currency:
+                  $ref: "#/components/schemas/Currency"
+                network:
+                  $ref: "#/components/schemas/Network"
+                src_address:
+                  $ref: "#/components/schemas/Address"
+                codes:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - C-200109-293319
+                    - T-191122-540812
+                total_amount:
+                  $ref: "#/components/schemas/Decimal"
+              required:
+                - request_uid
+                - currency
+                - src_address
+                - codes
+                - total_amount
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      request_id:
+                        $ref: "#/components/schemas/ID"
+                      address_id:
+                        $ref: "#/components/schemas/ID"
+                      status:
+                        type: integer
+                        example: 1
+                      currency:
+                        $ref: "#/components/schemas/Currency"
+                      network:
+                        $ref: "#/components/schemas/Network"
+                      amount:
+                        $ref: "#/components/schemas/Decimal"
+                      amount_estimated_fee:
+                        $ref: "#/components/schemas/Decimal"
+                      combined_txn_hash:
+                        $ref: "#/components/schemas/TxnHash"
+                      create_uid:
+                        $ref: "#/components/schemas/ID"
+                      create_time:
+                        $ref: "#/components/schemas/Timestamp"
+  /v1/system/withdrawal/transfer/confirm/:
+    post:
+      summary: Comfirm a System withdrawal request
+      tags:
+        - System
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                request_id:
+                  $ref: "#/components/schemas/ID"
+              required:
+                - request_id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+  /v1/system/withdrawal/transfer/replace/:
+    post:
+      summary: Replace a System withdrawal request
+      tags:
+        - System
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                request_id:
+                  $ref: "#/components/schemas/ID"
+                fee_info:
+                  $ref: "#/components/schemas/FeeInfo"
+              required:
+                - request_id
+                - fee_info
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+  /v1/system/pool/bonus/leader/checkout/:
+    post:
+      summary: Checkout Leader Bonus Pool meta data
+      tags:
+        - System
+        - Bonus Pool
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                from_date:
+                  $ref: "#/components/schemas/Date"
+                to_date:
+                  $ref: "#/components/schemas/Date"
+              required:
+                - from_date
+                - to_date
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      execution_hash:
+                        $ref: "#/components/schemas/TxnHash"
+                      from_date:
+                        $ref: "#/components/schemas/Date"
+                      to_date:
+                        $ref: "#/components/schemas/Date"
+                      total_amount:
+                        $ref: "#/components/schemas/Decimal"
+                      tier_info_list:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/BonusPoolLeaderTierInfo"
+                    required:
+                      - execution_hash
+                      - from_date
+                      - to_date
+                      - total_amount
+                      - tier_info_list
+  /v1/system/pool/bonus/leader/execute/:
+    post:
+      summary: Execute a Leader Bonus Pool reward session
+      tags:
+        - System
+        - Bonus Pool
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                execution_hash:
+                  $ref: "#/components/schemas/TxnHash"
+                from_date:
+                  $ref: "#/components/schemas/Date"
+                to_date:
+                  $ref: "#/components/schemas/Date"
+                total_amount:
+                  $ref: "#/components/schemas/Decimal"
+                tier_info_list:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/BonusPoolLeaderTierInfo"
+              required:
+                - execution_hash
+                - from_date
+                - to_date
+                - total_amount
+                - tier_info_list
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      execution:
+                        type: object
+                        properties:
+                          id:
+                            $ref: "#/components/schemas/ID"
+                          from_date:
+                            $ref: "#/components/schemas/Date"
+                          to_date:
+                            $ref: "#/components/schemas/Date"
+                          total_amount:
+                            $ref: "#/components/schemas/Decimal"
+                          status:
+                            $ref: "#/components/schemas/BonusPoolLeaderExecutionStatus"
+                          create_time:
+                            $ref: "#/components/schemas/Timestamp"
+                          update_time:
+                            $ref: "#/components/schemas/Timestamp"
+                        required:
+                          - id
+                          - from_date
+                          - to_date
+                          - total_amount
+                          - status
+                          - create_time
+                          - update_time

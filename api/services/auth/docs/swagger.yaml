@@ -1,0 +1,728 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Torque Auth Service
+servers:
+  - url: "/"
+components:
+  securitySchemes:
+    CommitAuth:
+      type: http
+      scheme: bearer
+    AccessAuth:
+      type: http
+      scheme: bearer
+    RefreshAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Errors:
+      type: array
+      items:
+        type: string
+        example: Field validation for 'type' failed on the 'required' tag.
+    ResponseMessage:
+      type: string
+      example: "Field validation for 'user_id' failed on the 'required' tag."
+    ID:
+      type: integer
+      minimum: 1
+      example: 8466032601
+    Username:
+      type: string
+      example: powerman
+    AuthCode:
+      type: string
+      example: "123456"
+      minLength: 6
+      maxLength: 6
+    DeviceUID:
+      type: string
+      example: "android-0123abcd"
+      maxLength: 128
+    JwtToken:
+      type: string
+      example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+    Email:
+      type: string
+      example: torquebot1@gmail.com
+    CountryCode:
+      type: string
+      example: VN
+    Status:
+      type: integer
+      enum:
+        - 1
+        - 2
+        - 5
+        - 3
+        - 6
+        - 7
+      description: |
+        * 1 - Init
+        * 2 - Pending Analysis
+        * 5 - Pending Approval
+        * 3 - Approved
+        * 6 - Rejected
+        * 7 - Failed
+    Timestamp:
+      type: integer
+      example: 1596517386
+    Note:
+      type: string
+      example: Test ...
+    Date:
+      type: string
+      example: "2006-01-02"
+    UserType:
+      type: integer
+      enum:
+        - 1
+        - 2
+        - 3
+      description: |
+        * 1 - Old
+        * 2 - Middle
+        * 3 - New
+    Code:
+      type: string
+      example: 65692274f18911eaa53dfc3fdb8a2f0e
+    Nationality:
+      type: string
+      example: VN
+    IP:
+      type: string
+      example: 115.73.221.170
+    Country:
+      type: string
+      example: Viet Nam
+    Number:
+      type: integer
+      example: 1
+security:
+  - AccessAuth: []
+tags:
+  - name: KYC
+  - name: S2S
+  - name: Meta
+paths:
+  /v1/login/input/prepare/:
+    post:
+      summary: Prepare data for a secure login
+      tags:
+        - Login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  $ref: "#/components/schemas/Username"
+              required:
+                - username
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      nonce_id:
+                        $ref: "#/components/schemas/Code"
+                      nonce:
+                        type: string
+                        example: e00a37f05518e155f016d327
+                      salt:
+                        type: string
+                        example: 88497d3fcf2b4c77e0cd1c9e2ec3efdc
+                    required:
+                      - nonce_id
+                      - nonce
+                      - salt
+  /v1/login/input/execute/:
+    post:
+      summary: Execute a secure login
+      tags:
+        - Login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  $ref: "#/components/schemas/Username"
+                password:
+                  type: string
+                  description: "`Hex(AesGcm256(password))` (with `salt` and `nonce` in a prepare response)"
+                  example: b41a4b0294c07d7ab5b60682a93870cdb0927cf52a76
+                nonce_id:
+                  $ref: "#/components/schemas/Code"
+              required:
+                - username
+                - password
+                - nonce_id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      commit_token:
+                        $ref: "#/components/schemas/JwtToken"
+                    required:
+                      - commit_token
+  /v1/login/input/commit/:
+    post:
+      summary: Commit a secure login
+      tags:
+        - Login
+      security:
+        - CommitAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_uid:
+                  $ref: "#/components/schemas/DeviceUID"
+                auth_code:
+                  $ref: "#/components/schemas/AuthCode"
+              required:
+                - device_uid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      access_token:
+                        $ref: "#/components/schemas/JwtToken"
+                      refresh_token:
+                        $ref: "#/components/schemas/JwtToken"
+                    required:
+                      - access_token
+                      - refresh_token
+  /v1/login/refresh/:
+    post:
+      summary: Refresh tokens
+      tags:
+        - Login
+      security:
+        - RefreshAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_uid:
+                  $ref: "#/components/schemas/DeviceUID"
+                rotate:
+                  type: boolean
+                  description: TRUE when we need a new Refresh token
+              required:
+                - device_uid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+                  data:
+                    type: object
+                    properties:
+                      access_token:
+                        $ref: "#/components/schemas/JwtToken"
+                      refresh_token:
+                        $ref: "#/components/schemas/JwtToken"
+                    required:
+                      - access_token
+  /v1/login/logout/:
+    post:
+      summary: Logout
+      tags:
+        - Login
+      security:
+        - RefreshAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: "#/components/schemas/ResponseMessage"
+  /v1/kyc/init/:
+    post:
+      summary: Init Kyc
+      tags:
+        - KYC
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                dob:
+                  $ref: "#/components/schemas/Date"
+                nationality:
+                  $ref: "#/components/schemas/Nationality"
+                residential_address:
+                  $ref: "#/components/schemas/Note"
+                postal_code:
+                  $ref: "#/components/schemas/ID"
+                city:
+                  $ref: "#/components/schemas/Note"
+                country:
+                  $ref: "#/components/schemas/Nationality"
+              required:
+                - full_name
+                - dob
+                - nationality
+                - residential_address
+                - postal_code
+                - city
+                - country
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/Errors"
+                  data:
+                    type: object
+                    properties:
+                      kyc_code:
+                        $ref: "#/components/schemas/Code"
+                      user_code:
+                        $ref: "#/components/schemas/Code"
+                      jumio_api_token:
+                        $ref: "#/components/schemas/Note"
+                      jumio_api_secret:
+                        $ref: "#/components/schemas/Note"
+  /v1/kyc/init/url/:
+    post:
+      summary: Init Kyc for web
+      tags:
+        - KYC
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  $ref: "#/components/schemas/Note"
+                dob:
+                  $ref: "#/components/schemas/Date"
+                nationality:
+                  $ref: "#/components/schemas/Nationality"
+                residential_address:
+                  $ref: "#/components/schemas/Note"
+                postal_code:
+                  $ref: "#/components/schemas/ID"
+                city:
+                  $ref: "#/components/schemas/Note"
+                country:
+                  $ref: "#/components/schemas/Nationality"
+              required:
+                - full_name
+                - dob
+                - nationality
+                - residential_address
+                - postal_code
+                - city
+                - country
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/Errors"
+                  data:
+                    type: object
+                    properties:
+                      redirect_url:
+                        $ref: "#/components/schemas/Note"
+  /v1/kyc/submit/:
+    post:
+      summary: Submit kyc
+      tags:
+        - KYC
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                kyc_code:
+                  $ref: "#/components/schemas/Code"
+                reference:
+                  $ref: "#/components/schemas/Code"
+              required:
+                - kyc_code
+                - reference
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/Errors"
+                  data:
+                    type: string
+                    example: null
+  /v1/kyc/get/:
+    post:
+      summary: Get kyc
+      tags:
+        - KYC
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/Errors"
+                  data:
+                    type: object
+                    properties:
+                      request:
+                        type: object
+                        properties:
+                          id:
+                            $ref: "#/components/schemas/ID"
+                          uid:
+                            $ref: "#/components/schemas/ID"
+                          status:
+                            $ref: "#/components/schemas/Status"
+                          full_name:
+                            type: string
+                          username:
+                            $ref: "#/components/schemas/Username"
+                          note:
+                            $ref: "#/components/schemas/Note"
+                          dob:
+                            $ref: "#/components/schemas/Date"
+                          nationality:
+                            $ref: "#/components/schemas/Nationality"
+                          residential_address:
+                            type: string
+                          postal_code:
+                            type: string
+                          city:
+                            type: string
+                          country:
+                            $ref: "#/components/schemas/Nationality"
+                      user_type:
+                        $ref: "#/components/schemas/UserType"
+                      remaining_attempts:
+                        $ref: "#/components/schemas/Number"
+                      blacklist_info:
+                        type: object
+                        properties:
+                          in_blacklist:
+                            type: boolean
+                          reason:
+                            $ref: "#/components/schemas/Note"
+  /v1/kyc/meta/:
+    post:
+      summary: Kyc meta
+      tags:
+        - KYC
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/Errors"
+                  data:
+                    type: object
+                    properties:
+                      reminder:
+                        type: object
+                        properties:
+                          deadline_time:
+                            $ref: "#/components/schemas/Timestamp"
+                          is_enabled:
+                            type: boolean
+  /v1/kyc/validate/email/:
+    post:
+      summary: Kyc validate email
+      tags:
+        - KYC
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  $ref: "#/components/schemas/Email"
+              required:
+                - email
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/Errors"
+                  data:
+                    type: object
+                    properties:
+                      is_valid_email:
+                        type: boolean
+                      message:
+                        $ref: "#/components/schemas/Note"
+  /v1/s2s/kyc/get/:
+    post:
+      summary: Get kyc
+      tags:
+        - S2S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uid:
+                  $ref: "#/components/schemas/ID"
+              required:
+                - uid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/Errors"
+                  data:
+                    type: object
+                    properties:
+                      request:
+                        type: object
+                        properties:
+                          id:
+                            $ref: "#/components/schemas/ID"
+                          uid:
+                            $ref: "#/components/schemas/ID"
+                          status:
+                            $ref: "#/components/schemas/Status"
+                          full_name:
+                            type: string
+                          username:
+                            $ref: "#/components/schemas/Username"
+                          note:
+                            $ref: "#/components/schemas/Note"
+                          dob:
+                            $ref: "#/components/schemas/Date"
+                          nationality:
+                            $ref: "#/components/schemas/Nationality"
+                          residential_address:
+                            type: string
+                          postal_code:
+                            type: string
+                          city:
+                            type: string
+                          country:
+                            $ref: "#/components/schemas/Nationality"
+                      user_type:
+                        $ref: "#/components/schemas/UserType"
+                      remaining_attempts:
+                        $ref: "#/components/schemas/Number"
+                      blacklist_info:
+                        type: object
+                        properties:
+                          in_blacklist:
+                            type: boolean
+                          reason:
+                            $ref: "#/components/schemas/Note"
+  /v1/s2s/kyc/meta/:
+    post:
+      summary: Kyc meta
+      tags:
+        - S2S
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/Errors"
+                  data:
+                    type: object
+                    properties:
+                      reminder:
+                        type: object
+                        properties:
+                          deadline_time:
+                            $ref: "#/components/schemas/Timestamp"
+                          is_enabled:
+                            type: boolean
+  /v1/s2s/kyc/send/email/:
+    post:
+      summary: Kyc send email
+      tags:
+        - S2S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                request_id:
+                  $ref: "#/components/schemas/ID"
+                request_status:
+                  $ref: "#/components/schemas/Status"
+              required:
+                - request_id
+                - request_status
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/Errors"
+                  data:
+                    type: string
+                    example: null
+  /v1/s2s/kyc/validate/email/:
+    post:
+      summary: Kyc validate email
+      tags:
+        - S2S
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  $ref: "#/components/schemas/Email"
+              required:
+                - email
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/Errors"
+                  data:
+                    type: object
+                    properties:
+                      is_valid_email:
+                        type: boolean
+                      message:
+                        $ref: "#/components/schemas/Note"
+  /v1/meta/status/:
+    post:
+      summary: Meta status
+      tags:
+        - Meta
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/Errors"
+                  data:
+                    type: object
+                    properties:
+                      registration:
+                        type: object
+                        properties:
+                          banned_info:
+                            type: object
+                            properties:
+                              ip:
+                                $ref: "#/components/schemas/IP"
+                              country:
+                                $ref: "#/components/schemas/Country"
+                              message:
+                                $ref: "#/components/schemas/Note"
+                          is_banned:
+                            type: boolean
